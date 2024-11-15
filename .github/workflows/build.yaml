@@ -3,11 +3,12 @@ name: build
 on:
   push:
     branches:
-      - '**'
+      # - '**'
+      - '*'
   pull_request:
-    paths:
-      - '**'
-      - '!doc/**'
+    # paths:
+    #   - '**'
+    #   - '!doc/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,3 +18,16 @@ jobs:
         with:
           go-version-file: "go.mod"
       - run: make build
+
+      # Build bundle-build contanier image
+      - name: Build bundle container image
+        run: docker build -f upstream-builder.Dockerfile -t sanity-container .
+        
+      - name: Save image
+        run: docker save sanity-container -o sanity-container.tar
+      
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-container.tar
+          path: sanity-container.tar   
